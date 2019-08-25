@@ -13,14 +13,34 @@ var app = express();
 var httpServer = http.Server(app);
 var io = socketIO(httpServer); 
 
+app.use(express.static(path.join(__dirname,'/routes/public/')));
 
 //SOCKET HANDLING
-io.on("connection",(socket)=>{
+io.on("connection",async (socket,data)=>{
 	console.log("+ CONNECTED: ",socket.id);
 
-	socket.on("sendSignal",(data)=>{socket.broadcast.emit("receivedSignal",data);});
+	//ROOM
+	socket.on("joinRoom",async (data)=>{
+		if(socket.room){
+			io.to(socket.room).emit('roomStat',{room: socket.room, users: io.sockets.adapter.rooms[socket.room].length-1});
+			await socket.leave(socket.room);
+			console.log(`--  ${socket.id} LEAVING |${socket.room}|`);
+		}
+		socket.room = data.roomName;
+		await socket.join(socket.room);
+		io.to(socket.room).emit('roomStat',{room: socket.room, users: io.sockets.adapter.rooms[socket.room].length});
+		console.log(`++  ${socket.id} JOINING |${socket.room}|`);
+	});
 
-	socket.on("disconnect",()=>{console.log("- DISCONNECTED: ",socket.id);});
+	//HANDLE DISCONNECTION
+	socket.on("disconnect",async ()=>{
+		if(socket.room && io.sockets.adapter.rooms[socket.room]){
+			io.to(socket.room).emit('userDisconnecting',{socketid: socket.id});
+			io.to(socket.room).emit('roomStat',{room: socket.room, users: io.sockets.adapter.rooms[socket.room].length});
+			await socket.leave(socket.room);
+		}
+		console.log("- DISCONNECTED: ",socket.id);
+	});
 });
 
 httpServer.listen(PORT, ()=>{console.log(`HTTP SERVER UP ON PORT: ${PORT}`);});
