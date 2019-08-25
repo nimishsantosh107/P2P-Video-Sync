@@ -1,6 +1,7 @@
 /*
 roomStat - send {room, usercount}
 userDisconnecting - send {socketid}
+newSignal - send {peerid}
 */
 
 const express = require('express');
@@ -21,13 +22,13 @@ var io = socketIO(httpServer);
 app.use(express.static(path.join(__dirname,'/routes/public/')));
 
 //SOCKET HANDLING
-io.on("connection",async (socket,data)=>{
+io.on("connection",async (socket)=>{
 	console.log("+ CONNECTED: ",socket.id);
 
 	//ROOM
 	socket.on("joinRoom",async (data)=>{
 		if(socket.room){
-			io.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length-1});
+			socket.broadcast.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length-1});
 			await socket.leave(socket.room);
 			console.log(`--  ${socket.id} LEAVING |${socket.room}|`);
 		}
@@ -37,12 +38,19 @@ io.on("connection",async (socket,data)=>{
 		console.log(`++  ${socket.id} JOINING |${socket.room}|`);
 	});
 
+	//GET SIGNAL AND EMIT TO ROOM
+	socket.on('signal', async (data)=>{
+		socket.peerid = data.peerid;
+		socket.broadcast.to(socket.room).emit('newSignal',{peerid: socket.peerid});
+		console.log(`~~ SOCKETID: ${socket.id} | PEERID: ${socket.peerid}`)
+	});
+
 	//HANDLE DISCONNECTION
 	socket.on("disconnect",async ()=>{
 		if(socket.room && io.sockets.adapter.rooms[socket.room]){
-			io.to(socket.room).emit('userDisconnecting',{socketid: socket.id});
-			io.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length});
-			await socket.leave(socket.room);
+			socket.broadcast.to(socket.room).emit('userDisconnecting',{socketid: socket.id});
+			socket.broadcast.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length});
+			//await socket.leave(socket.room);
 		}
 		console.log("- DISCONNECTED: ",socket.id);
 	});
