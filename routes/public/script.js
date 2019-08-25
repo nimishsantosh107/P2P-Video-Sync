@@ -55,8 +55,9 @@ socket.on('connect', function () {
 		//PRINT PEERSLIST AFTER ALL USERS JOIN
 	});
 
+	//DELETE LEFT USER FROM PEERSLIST
 	socket.on('newLeaving', function (data) {
-		peersList.pop(data.leftPeerid);
+		peersList.pop(data.leftPeerid); //****************************************
 		console.log(`${data.leftPeerid} LEFT THE ROOM`);
 	});
 });
