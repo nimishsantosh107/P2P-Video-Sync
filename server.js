@@ -1,7 +1,7 @@
 /*
 roomStat - send {room, usercount}
 userDisconnecting - send {socketid}
-newSignal - send {peerid}
+newSignal - send {socketid, peerid}
 */
 
 const express = require('express');
@@ -27,11 +27,6 @@ io.on("connection",async (socket)=>{
 
 	//ROOM
 	socket.on("joinRoom",async (data)=>{
-		if(socket.room){
-			socket.broadcast.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length-1});
-			await socket.leave(socket.room);
-			console.log(`--  ${socket.id} LEAVING |${socket.room}|`);
-		}
 		socket.room = data.roomName;
 		await socket.join(socket.room);
 		io.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length});
@@ -41,14 +36,25 @@ io.on("connection",async (socket)=>{
 	//GET SIGNAL AND EMIT TO ROOM
 	socket.on('signal', async (data)=>{
 		socket.peerid = data.peerid;
-		socket.broadcast.to(socket.room).emit('newSignal',{peerid: socket.peerid});
+		socket.broadcast.to(socket.room).emit('newSignal',{socketid: socket.id, peerid: socket.peerid});
 		console.log(`~~ SOCKETID: ${socket.id} | PEERID: ${socket.peerid}`)
+	});
+
+	socket.on('returnSignal', (data)=>{
+		socket.broadcast.to(data.destSocket).emit('newReturnSignal',{socketid: socket.id, peerid: data.peerid});
+	});
+
+	socket.on('leaving', async (data)=>{
+		socket.broadcast.to(socket.room).emit('newLeaving',{leftPeerid: data.peerid});
+		socket.broadcast.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length-1});
+		await socket.leave(socket.room);
+		console.log(`--  ${socket.id} LEAVING |${socket.room}|`);
 	});
 
 	//HANDLE DISCONNECTION
 	socket.on("disconnect",async ()=>{
 		if(socket.room && io.sockets.adapter.rooms[socket.room]){
-			socket.broadcast.to(socket.room).emit('userDisconnecting',{socketid: socket.id});
+			socket.broadcast.to(socket.room).emit('newLeaving',{leftPeerid: socket.peerid});
 			socket.broadcast.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length});
 			//await socket.leave(socket.room);
 		}
