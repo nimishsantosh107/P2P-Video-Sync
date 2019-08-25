@@ -1,3 +1,8 @@
+/*
+roomStat - send {room, usercount}
+userDisconnecting - send {socketid}
+*/
+
 const express = require('express');
 const socketIO = require('socket.io');
 const http = require('http');
@@ -22,13 +27,13 @@ io.on("connection",async (socket,data)=>{
 	//ROOM
 	socket.on("joinRoom",async (data)=>{
 		if(socket.room){
-			io.to(socket.room).emit('roomStat',{room: socket.room, users: io.sockets.adapter.rooms[socket.room].length-1});
+			io.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length-1});
 			await socket.leave(socket.room);
 			console.log(`--  ${socket.id} LEAVING |${socket.room}|`);
 		}
 		socket.room = data.roomName;
 		await socket.join(socket.room);
-		io.to(socket.room).emit('roomStat',{room: socket.room, users: io.sockets.adapter.rooms[socket.room].length});
+		io.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length});
 		console.log(`++  ${socket.id} JOINING |${socket.room}|`);
 	});
 
@@ -36,7 +41,7 @@ io.on("connection",async (socket,data)=>{
 	socket.on("disconnect",async ()=>{
 		if(socket.room && io.sockets.adapter.rooms[socket.room]){
 			io.to(socket.room).emit('userDisconnecting',{socketid: socket.id});
-			io.to(socket.room).emit('roomStat',{room: socket.room, users: io.sockets.adapter.rooms[socket.room].length});
+			io.to(socket.room).emit('roomStat',{room: socket.room, usercount: io.sockets.adapter.rooms[socket.room].length});
 			await socket.leave(socket.room);
 		}
 		console.log("- DISCONNECTED: ",socket.id);

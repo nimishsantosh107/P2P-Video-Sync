@@ -1,3 +1,5 @@
+function updateCounter(count) {connectedCounter.innerText = `CONNECTED: ${count}`;}
+
 var socket = io(window.location.origin);
 
 socket.on('connect', function () {
@@ -14,8 +16,13 @@ socket.on('connect', function () {
 	});
 
 	//DISPLAY NUMBER OF CONNECTED USERS
-	socket.on('roomStat', function (data) {console.log(data);});
+	//GET {room, usercount}
+	socket.on('roomStat', function (data) {
+		console.log(data);
+		updateCounter(data.usercount);
+	});
 
 	//USER DISCONNECTION
+	//GET {socketid}
 	socket.on('userDisconnecting', function (data) {console.log(data);});
 });
