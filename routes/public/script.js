@@ -9,7 +9,7 @@ leaving - send {peerid}
 
 function updateCounter(count) {connectedCounter.innerText = `CONNECTED: ${count}`;}
 
-function deletePeer(peerid) {
+function deletePeerData(peerid) {
 	var index = -1;
 	for(var i = 0 ; i < peersList.length ; i++){
 		if(peersList[i].peerid === peerid)
@@ -29,6 +29,26 @@ function deleteConnObj(peerid) {
 		connObjList.splice(index,1);
 }
 
+function deleteCallObj(peerid) {
+	var index = -1;
+	for(var i = 0 ; i < callObjList.length ; i++){
+		if(callObjList[i].peer === peerid)
+			index = i;
+	}
+	if (index !== -1)
+		callObjList.splice(index,1);
+}
+
+async function deleteAudioTags(peerid) {
+	var temp = null;
+	await audioCalls.childNodes.forEach(function(audioTag){
+		if(audioTag.id === peerid)
+			temp = audioTag;
+	});
+	if(temp)
+		audioCalls.removeChild(temp);
+}
+
 function sendMessage() {
 	var msg = messageSendText.value;
 	updateMessageList(msg);
@@ -44,14 +64,26 @@ function updateMessageList(msg) {
 	messages.append(p);
 }
 
+function getAudioStream () {
+	//AUDIO STREAM-CALL
+	navigator.mediaDevices.getUserMedia({audio:true}).then(function (stream) {
+		console.log(stream);
+		window.stream = stream;
+	}, function (err) {console.log(`ERROR GETTING STREAM`);});
+}
+
 //INIT
 var socket = io(window.location.origin);
 var peer = null;
 var peersList = [];
 var connObjList = [];
+var callObjList = [];
 
-socket.on('connect', function () {
+
+socket.on('connect', async function () {
 	console.log('CONNECTED');
+	//INIT
+	await getAudioStream();
 
 	//JOIN A ROOM
 	roomJoinButton.addEventListener('click', async function () {
@@ -61,6 +93,7 @@ socket.on('connect', function () {
 			//PEER LEAVING CURRENT ROOM / JOINING NEW
 			peersList = [];
 			connObjList = [];
+			callObjList = [];
 			if(socket.room){
 				messages.innerHTML = "";
 				socket.emit('leaving', {peerid: peer.id});
@@ -79,7 +112,7 @@ socket.on('connect', function () {
 				console.log(`PEER ID: ${peer.id}`);
 			});
 
-			//RECIEVE CONNECTION - SET CONN METHODS***********
+			//RECIEVE CONNECTION - SET CONN METHODS ***********
 			peer.on('connection', function (conn) {
 				//DATA
 			  	conn.on('data', function(message) {
@@ -89,6 +122,24 @@ socket.on('connect', function () {
 				//PUSH CONN TO CONN LIST FINALLY
 				deleteConnObj(conn.peer);
 				connObjList.push(conn);							
+			});
+
+			peer.on('call', function (call) {
+				//GET REMOTE STREAM
+				call.on('stream',function(stream){
+					var audioTag = document.createElement("audio");
+					audioTag.id = call.peer;
+					audioTag.srcObject = stream;
+					audioCalls.appendChild(audioTag);
+					audioTag.play();
+							
+					//PUSH TO CALL OBJ ARRAY
+					deleteCallObj(call.peer);
+					callObjList.push(call);
+				});
+
+				//ANSWER
+				call.answer(window.stream);
 			});
 		}
 	});
@@ -102,11 +153,11 @@ socket.on('connect', function () {
 
 	//GET NEW PEER ID AND MAKE CONNECTION TO NEW CLIENT
 	socket.on('newSignal', async function (data) {
-		deletePeer(data.peerid);
+		deletePeerData(data.peerid);
 		peersList.push(data);
+
 		//CONNECT TO PEER
 		var conn = await peer.connect(data.peerid);
-		
 		//CONN METHODS  ***********
 		conn.on('open', function () {
 			//DATA
@@ -119,19 +170,37 @@ socket.on('connect', function () {
 			connObjList.push(conn);
 		});
 
+		//CALL PEER
+		var call = await peer.call(data.peerid, window.stream);
+		//CALL METHODS
+		call.on('stream',function(stream){
+			var audioTag = document.createElement("audio");
+			audioTag.id = call.peer;
+			audioTag.srcObject = stream;
+			audioCalls.appendChild(audioTag);
+			audioTag.play();
+
+			//PUSH TO CALL OBJ ARRAY
+			deleteCallObj(call.peer);
+			callObjList.push(call);
+		});
+
+
 		socket.emit('returnSignal', {destSocket: data.socketid, peerid: peer.id});
 	});
 
 	socket.on('newReturnSignal', function (data) {
-		deletePeer(data.peerid);
+		deletePeerData(data.peerid);
 		peersList.push(data);
 		//PRINT PEERSLIST AFTER ALL USERS JOIN
 	});
 
 	//DELETE LEFT USER FROM PEERSLIST
 	socket.on('newLeaving', function (data) {
-		deletePeer(data.leftPeerid);
+		deletePeerData(data.leftPeerid);
 		deleteConnObj(data.leftPeerid);
+		deleteCallObj(data.leftPeerid);
+		deleteAudioTags(data.leftPeerid);
 		console.log(`${data.leftPeerid} LEFT THE ROOM`);
 	});
 });

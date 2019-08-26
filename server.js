@@ -19,7 +19,7 @@ var app = express();
 var httpServer = http.Server(app);
 var io = socketIO(httpServer); 
 
-app.use(express.static(path.join(__dirname,'/routes/public/')));
+app.use("/",express.static(path.join(__dirname,'/routes/public/')));
 
 //SOCKET HANDLING
 io.on("connection",async (socket)=>{
