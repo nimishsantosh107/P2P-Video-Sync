@@ -1,7 +1,10 @@
 /*
+joinRoom - send {roomName}
 signal - send {peerid}
 returnSignal - send {destSocket, this.peerid}
 leaving - send {peerid} 
+
+* ALWAYS DELETE ELEMENT BEFORE PUSHING ELEMENT TO REMOVE DUPLICATES IF EXISTS
 */
 
 function updateCounter(count) {connectedCounter.innerText = `CONNECTED: ${count}`;}
@@ -32,6 +35,7 @@ function sendMessage() {
 	connObjList.forEach(function (connObj) {
 		connObj.send(msg);
 	});
+	messageSendText.value = "";
 }
 
 function updateMessageList(msg) {
@@ -40,6 +44,7 @@ function updateMessageList(msg) {
 	messages.append(p);
 }
 
+//INIT
 var socket = io(window.location.origin);
 var peer = null;
 var peersList = [];
@@ -60,27 +65,29 @@ socket.on('connect', function () {
 				messages.innerHTML = "";
 				socket.emit('leaving', {peerid: peer.id});
 			}
-			socket.room = roomName.value;
-			socket.emit('joinRoom',{roomName: socket.room});
 
 			//P2P
 			peer = await new Peer();
 
-			//INIT PEER ID & SIGNAL
+			//INIT PEER ID & SIGNAL & JOIN ROOM
 			peer.on('open', function (id) {
 				peer.id = id;
+				socket.room = roomName.value;
+				socket.emit('joinRoom',{roomName: socket.room});
 				socket.emit('signal',{peerid: peer.id});
 				messageContainer.style.display = "block";
 				console.log(`PEER ID: ${peer.id}`);
 			});
 
-			//RECIEVE CONNECTION ***********
+			//RECIEVE CONNECTION - SET CONN METHODS***********
 			peer.on('connection', function (conn) {
-				//SET DATA LISTENER 
-			  	conn.on('data', function(data) {
-			  		updateMessageList("PEER: "+data);
+				//DATA
+			  	conn.on('data', function(message) {
+			  		updateMessageList("PEER: "+message);
 			  	});
+
 				//PUSH CONN TO CONN LIST FINALLY
+				deleteConnObj(conn.peer);
 				connObjList.push(conn);							
 			});
 		}
@@ -93,18 +100,22 @@ socket.on('connect', function () {
 		console.log(data);
 	});
 
-	//GET NEW PEER CONNECTION AND MAKE CONNECTION TO NEW CLIENT
+	//GET NEW PEER ID AND MAKE CONNECTION TO NEW CLIENT
 	socket.on('newSignal', async function (data) {
+		deletePeer(data.peerid);
 		peersList.push(data);
 		//CONNECT TO PEER
 		var conn = await peer.connect(data.peerid);
+		
 		//CONN METHODS  ***********
 		conn.on('open', function () {
-			//SET DATA LISTENER
-		  	conn.on('data', function(data){
-		  		updateMessageList("PEER: "+data);
+			//DATA
+		  	conn.on('data', function(message){
+		  		updateMessageList("PEER: "+message);
 		  	});	
+
 			//PUSH TO PEER OBJ LIST
+			deleteConnObj(conn.peer);
 			connObjList.push(conn);
 		});
 
@@ -112,6 +123,7 @@ socket.on('connect', function () {
 	});
 
 	socket.on('newReturnSignal', function (data) {
+		deletePeer(data.peerid);
 		peersList.push(data);
 		//PRINT PEERSLIST AFTER ALL USERS JOIN
 	});
