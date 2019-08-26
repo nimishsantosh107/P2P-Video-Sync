@@ -129,6 +129,7 @@ socket.on('connect', async function () {
 				call.on('stream',function(stream){
 					var audioTag = document.createElement("audio");
 					audioTag.id = call.peer;
+					audioTag.controls = "true";
 					audioTag.srcObject = stream;
 					audioCalls.appendChild(audioTag);
 					audioTag.play();
@@ -176,6 +177,7 @@ socket.on('connect', async function () {
 		call.on('stream',function(stream){
 			var audioTag = document.createElement("audio");
 			audioTag.id = call.peer;
+			audioTag.controls = "true";
 			audioTag.srcObject = stream;
 			audioCalls.appendChild(audioTag);
 			audioTag.play();
