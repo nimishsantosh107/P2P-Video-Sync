@@ -8,7 +8,13 @@
 	<div>
 		<input type="text" id="roomName" placeholder="Enter room name" name="roomName" autofocus>
 		<button id="roomJoinButton">JOIN</button>
-	</div>
+	</div><br><br>
+
+	<div id="messageContainer" style="display: none;">
+		<div id="messages"></div>
+		<input id="messageSendText" type="text" name="messageSend" placeholder="Enter message">
+		<button id="messageSendButton" onclick="sendMessage()">SEND</button>
+	</div><br><br>
 
     <script src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="./peermin.js"></script>
