@@ -6,6 +6,16 @@ leaving - send {peerid}
 
 function updateCounter(count) {connectedCounter.innerText = `CONNECTED: ${count}`;}
 
+function deletePeer(peerid) {
+	var index = -1;
+	for(var i = 0 ; i < peersList.length ; i++){
+		if(peersList[i].peerid === peerid)
+			index = i;
+	}
+	if (index !== -1)
+		peersList.splice(index,1);
+}
+
 var socket = io(window.location.origin);
 var peer = null;
 var peersList = [];
@@ -57,7 +67,7 @@ socket.on('connect', function () {
 
 	//DELETE LEFT USER FROM PEERSLIST
 	socket.on('newLeaving', function (data) {
-		peersList.pop(data.leftPeerid); //****************************************
+		deletePeer(data.leftPeerid); //****************************************
 		console.log(`${data.leftPeerid} LEFT THE ROOM`);
 	});
 });
