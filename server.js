@@ -2,6 +2,8 @@
 roomStat - send {room, usercount}
 userDisconnecting - send {socketid}
 newSignal - send {socketid, peerid}
+
+//MULTI INSTANCE SAME BROWSER - CRASH / LAM ONLY(TURN)
 */
 
 const express = require('express');
