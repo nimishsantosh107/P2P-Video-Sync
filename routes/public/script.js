@@ -127,6 +127,7 @@ socket.on('connect', async function () {
 			peer.on('call', function (call) {
 				//GET REMOTE STREAM
 				call.on('stream',function(stream){
+					console.log("RECIEVED: ",stream);
 					var audioTag = document.createElement("audio");
 					audioTag.id = call.peer;
 					audioTag.controls = "true";
@@ -175,6 +176,7 @@ socket.on('connect', async function () {
 		var call = await peer.call(data.peerid, window.stream);
 		//CALL METHODS
 		call.on('stream',function(stream){
+			console.log("RECIEVED: ",stream);
 			var audioTag = document.createElement("audio");
 			audioTag.id = call.peer;
 			audioTag.controls = "true";
