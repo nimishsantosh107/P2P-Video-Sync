@@ -121,6 +121,15 @@ videoPlayer.oncanplay = function () {
 
 videoPlayer.onwaiting = function () {
 	console.log("waiting","  ",videoPlayer.readyState);
+	if(videoControlFlag){	
+		var videoinfo = {
+			play: null,
+			pause: true,
+			seekData: null,
+		}
+		var jsonString = createDataPacket(null, videoinfo);
+		transmitData(jsonString);
+	}
 }
 
 function sendMessage() {
