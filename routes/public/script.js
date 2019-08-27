@@ -146,7 +146,7 @@ function handleOnData(jsonString) {
 			videoPlayer.currentTime = videoinfo.seekData.seekTime;
 			videoPlayer.play();
 		}
-		setTimeout(function(){ videoControlFlag = true; }, 500);
+		setTimeout(function(){ videoControlFlag = true; }, 700);
 	}
 }
 
@@ -257,7 +257,18 @@ socket.on('connect', async function () {
 			//DATA
 		  	conn.on('data', function(jsonString){
 		  		handleOnData(jsonString);
-		  	});	
+		  	});
+
+		  	//SEND CURRENT VIDEO INFO TO NEW CLIENT
+		  	var videoinfo = {
+				play: null,
+				pause: null,
+				seekData:{
+					seekTime: videoPlayer.currentTime+0.15,
+					},
+				};
+			var jsonString = createDataPacket(null, videoinfo);
+			conn.send(jsonString);
 
 			//PUSH TO PEER OBJ LIST
 			deleteConnObj(conn.peer);
