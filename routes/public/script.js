@@ -119,6 +119,10 @@ videoPlayer.oncanplay = function () {
 	console.log("canplay","  ",videoPlayer.readyState);
 }
 
+videoPlayer.onwaiting = function () {
+	console.log("waiting","  ",videoPlayer.readyState);
+}
+
 function sendMessage() {
 	var msg = messageSendText.value;
 	updateMessageList(msg);
