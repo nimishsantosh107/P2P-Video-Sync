@@ -120,7 +120,6 @@ videoPlayer.onseeking = function () {
 
 videoPlayer.oncanplay = function () {
 	console.log("canplay","  ",videoPlayer.readyState);
-	//if(videoControlFlag){
 		var videoinfo = {
 			event: "canplay",
 			play: true,
@@ -129,12 +128,10 @@ videoPlayer.oncanplay = function () {
 		}
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
-	//}
 }
 
 videoPlayer.onwaiting = function () {
 	console.log("waiting","  ",videoPlayer.readyState);
-	//if(videoControlFlag){	
 		var videoinfo = {
 			event: "waiting",
 			play: null,
@@ -143,7 +140,6 @@ videoPlayer.onwaiting = function () {
 		}
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
-	//}
 }
 
 function sendMessage() {
@@ -170,28 +166,24 @@ function handleOnData(jsonString) {
 		var timeStamp = new Date();
 		console.log(timeStamp.getHours().toString()+":"+timeStamp.getMinutes().toString()+":"+timeStamp.getSeconds().toString(),data);
 		var videoinfo = data.videoData.videoinfo
+		videoControlFlag = false;
 		if(videoinfo.play && videoinfo.event ==="played"){
-			videoControlFlag = false;
 			videoPlayer.play();
-			setTimeout(function(){ videoControlFlag = true; }, 300);
 		}
 		if(videoinfo.play && videoinfo.event === "canplay"){
 			videoPlayer.play();
 		}
 		if(videoinfo.pause && videoinfo.event === "paused"){
-			videoControlFlag = false;
 			videoPlayer.pause();
-			setTimeout(function(){ videoControlFlag = true; }, 300);
 		}
 		if(videoinfo.pause && videoinfo.event === "waiting"){
 			videoPlayer.pause();
 		}
 		if(videoinfo.seekData){
-			videoControlFlag = false;
 			videoPlayer.currentTime = videoinfo.seekData.seekTime;
 			videoPlayer.play();
-			setTimeout(function(){ videoControlFlag = true; }, 300);
 		}
+		setTimeout(function(){ videoControlFlag = true; }, 500);
 	}
 }
 
