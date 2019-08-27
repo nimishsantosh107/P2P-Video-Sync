@@ -115,6 +115,10 @@ videoPlayer.onseeking = function () {
 	}
 }
 
+videoPlayer.oncanplay = function () {
+	console.log("canplay","  ",videoPlayer.readyState);
+}
+
 function sendMessage() {
 	var msg = messageSendText.value;
 	updateMessageList(msg);
@@ -136,7 +140,8 @@ function handleOnData(jsonString) {
 		updateMessageList("PEER: "+data.messageData.message);
 	}
 	if(data.videoData && videoControlFlag){
-		console.log(Date(),"  ",data);
+		var timeStamp = new Date();
+		console.log(timeStamp.getHours().toString()+":"+timeStamp.getMinutes().toString()+":"+timeStamp.getSeconds().toString(),data);
 		videoControlFlag = false;
 		var videoinfo = data.videoData.videoinfo
 		if(videoinfo.play){
