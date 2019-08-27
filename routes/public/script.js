@@ -170,19 +170,29 @@ function handleOnData(jsonString) {
 	if(data.videoData && videoControlFlag){
 		var timeStamp = new Date();
 		console.log(timeStamp.getHours().toString()+":"+timeStamp.getMinutes().toString()+":"+timeStamp.getSeconds().toString(),data);
-		videoControlFlag = false;
 		var videoinfo = data.videoData.videoinfo
-		if(videoinfo.play){
+		if(videoinfo.play && videoinfo.event ==="played"){
+			videoControlFlag = false;
+			videoPlayer.play();
+			setTimeout(function(){ videoControlFlag = true; }, 300);
+		}
+		if(videoinfo.play && videoinfo.event === "canplay"){
 			videoPlayer.play();
 		}
-		if(videoinfo.pause){
+		if(videoinfo.play && videoinfo.event === "canplay"){
 			videoPlayer.pause();
 		}
+		if(videoinfo.pause && videoinfo.event === "paused"){
+			videoControlFlag = false;
+			videoPlayer.pause();
+			setTimeout(function(){ videoControlFlag = true; }, 300);
+		}
 		if(videoinfo.seekData){
+			videoControlFlag = false;
 			videoPlayer.currentTime = videoinfo.seekData.seekTime;
 			videoPlayer.play();
+			setTimeout(function(){ videoControlFlag = true; }, 300);
 		}
-		setTimeout(function(){ videoControlFlag = true; }, 300);
 	}
 }
 
