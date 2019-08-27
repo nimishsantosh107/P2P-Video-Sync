@@ -117,6 +117,15 @@ videoPlayer.onseeking = function () {
 
 videoPlayer.oncanplay = function () {
 	console.log("canplay","  ",videoPlayer.readyState);
+	if(videoControlFlag){
+		var videoinfo = {
+			play: true,
+			pause: null,
+			seekData: null,
+		}
+		var jsonString = createDataPacket(null, videoinfo);
+		transmitData(jsonString);
+	}
 }
 
 videoPlayer.onwaiting = function () {
@@ -167,7 +176,7 @@ function handleOnData(jsonString) {
 			videoPlayer.currentTime = videoinfo.seekData.seekTime;
 			videoPlayer.play();
 		}
-		setTimeout(function(){ videoControlFlag = true; }, 700);
+		setTimeout(function(){ videoControlFlag = true; }, 300);
 	}
 }
 
