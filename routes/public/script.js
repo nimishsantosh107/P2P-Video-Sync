@@ -248,7 +248,15 @@ socket.on('connect', async function () {
 			}
 
 			//P2P
-			peer = await new Peer();
+			peer = new Peer({
+			    config: {
+			        'iceServers': [{
+			            url: 'stun:stun.l.google.com:19302'
+			        }]
+			    }
+			}, {
+			    debug: 2
+			});
 
 			//INIT PEER ID & SIGNAL & JOIN ROOM
 			peer.on('open', function (id) {
@@ -301,7 +309,7 @@ socket.on('connect', async function () {
 		peersList.push(data);
 
 		//CONNECT TO PEER
-		var conn = await peer.connect(data.peerid);
+		var conn = await peer.connect(data.peerid, {reliable: true});
 		//CONN METHODS  ***********
 		conn.on('open', function () {
 			//DATA
