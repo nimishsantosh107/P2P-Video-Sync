@@ -119,27 +119,31 @@ videoPlayer.onseeking = function () {
 }
 
 videoPlayer.oncanplay = function () {
+	videoControlFlag = false;
 	console.log("canplay","  ",videoPlayer.readyState);
-		var videoinfo = {
-			event: "canplay",
-			play: true,
-			pause: null,
-			seekData: null,
-		}
-		var jsonString = createDataPacket(null, videoinfo);
-		transmitData(jsonString);
+	var videoinfo = {
+		event: "canplay",
+		play: true,
+		pause: null,
+		seekData: null,
+	}
+	var jsonString = createDataPacket(null, videoinfo);
+	transmitData(jsonString);
+	setTimeout(function(){ videoControlFlag = true; }, 500);
 }
 
 videoPlayer.onwaiting = function () {
+	videoControlFlag = false;
 	console.log("waiting","  ",videoPlayer.readyState);
-		var videoinfo = {
-			event: "waiting",
-			play: null,
-			pause: true,
-			seekData: null,
-		}
-		var jsonString = createDataPacket(null, videoinfo);
-		transmitData(jsonString);
+	var videoinfo = {
+		event: "waiting",
+		play: null,
+		pause: true,
+		seekData: null,
+	}
+	var jsonString = createDataPacket(null, videoinfo);
+	transmitData(jsonString);
+	setTimeout(function(){ videoControlFlag = true; }, 500);	
 }
 
 function sendMessage() {
