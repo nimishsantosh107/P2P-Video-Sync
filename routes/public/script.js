@@ -77,6 +77,7 @@ videoPlayer.onplay = function () {
 	console.log("played","  ",videoPlayer.readyState);
 	if(videoControlFlag){
 		var videoinfo = {
+			event: "played",
 			play: true,
 			pause: null,
 			seekData: null,
@@ -90,6 +91,7 @@ videoPlayer.onpause = function () {
 	console.log("paused","  ",videoPlayer.readyState);
 	if(videoControlFlag && (videoPlayer.readyState === 4)){	
 		var videoinfo = {
+			event: "paused",
 			play: null,
 			pause: true,
 			seekData: null,
@@ -104,6 +106,7 @@ videoPlayer.onseeking = function () {
 	if(videoControlFlag){
 		videoPlayer.play();
 		var videoinfo = {
+			event: "seeked",
 			play: null,
 			pause: null,
 			seekData:{
@@ -119,6 +122,7 @@ videoPlayer.oncanplay = function () {
 	console.log("canplay","  ",videoPlayer.readyState);
 //	if(videoControlFlag){
 		var videoinfo = {
+			event: "canplay",
 			play: true,
 			pause: null,
 			seekData: null,
@@ -133,6 +137,7 @@ videoPlayer.onwaiting = function () {
 	console.log("waiting","  ",videoPlayer.readyState);
 //	if(videoControlFlag){	
 		var videoinfo = {
+			event: "waiting",
 			play: null,
 			pause: true,
 			seekData: null,
