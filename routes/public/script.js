@@ -120,7 +120,7 @@ videoPlayer.onseeking = function () {
 
 videoPlayer.oncanplay = function () {
 	console.log("canplay","  ",videoPlayer.readyState);
-	if(videoControlFlag){
+	//if(videoControlFlag){
 		var videoinfo = {
 			event: "canplay",
 			play: true,
@@ -129,13 +129,13 @@ videoPlayer.oncanplay = function () {
 		}
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
-	}
+	//}
 	videoPlayer.play();
 }
 
 videoPlayer.onwaiting = function () {
 	console.log("waiting","  ",videoPlayer.readyState);
-	if(videoControlFlag){	
+	//if(videoControlFlag){	
 		var videoinfo = {
 			event: "waiting",
 			play: null,
@@ -144,7 +144,7 @@ videoPlayer.onwaiting = function () {
 		}
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
-	}
+	//}
 }
 
 function sendMessage() {
@@ -179,13 +179,13 @@ function handleOnData(jsonString) {
 		if(videoinfo.play && videoinfo.event === "canplay"){
 			videoPlayer.play();
 		}
-		if(videoinfo.play && videoinfo.event === "canplay"){
-			videoPlayer.pause();
-		}
 		if(videoinfo.pause && videoinfo.event === "paused"){
 			videoControlFlag = false;
 			videoPlayer.pause();
 			setTimeout(function(){ videoControlFlag = true; }, 300);
+		}
+		if(videoinfo.pause && videoinfo.event === "waiting"){
+			videoPlayer.pause();
 		}
 		if(videoinfo.seekData){
 			videoControlFlag = false;
