@@ -117,7 +117,7 @@ videoPlayer.onseeking = function () {
 
 videoPlayer.oncanplay = function () {
 	console.log("canplay","  ",videoPlayer.readyState);
-	if(videoControlFlag){
+//	if(videoControlFlag){
 		var videoinfo = {
 			play: true,
 			pause: null,
@@ -125,12 +125,13 @@ videoPlayer.oncanplay = function () {
 		}
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
-	}
+//	}
+	videoPlayer.play();
 }
 
 videoPlayer.onwaiting = function () {
 	console.log("waiting","  ",videoPlayer.readyState);
-	if(videoControlFlag){	
+//	if(videoControlFlag){	
 		var videoinfo = {
 			play: null,
 			pause: true,
@@ -138,7 +139,7 @@ videoPlayer.onwaiting = function () {
 		}
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
-	}
+//	}
 }
 
 function sendMessage() {
