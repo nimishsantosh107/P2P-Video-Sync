@@ -74,27 +74,14 @@ function createDataPacket (msg,videoinfo) {
 }
 
 videoPlayer.onplay = function () {
-	// console.log("played","  ",videoPlayer.readyState);
-	// if(videoControlFlag){
-	// 	var videoinfo = {
-	// 		event: "played",
-	// 		play: true,
-	// 		pause: null,
-	// 		seekData: null,
-	// 	}
-	// 	var jsonString = createDataPacket(null, videoinfo);
-	// 	transmitData(jsonString);
-	// }
+	console.log("played","  ",videoPlayer.readyState);
 	if(videoControlFlag){
-		videoPlayer.play();
 		var videoinfo = {
-			event: "seeked",
-			play: null,
+			event: "played",
+			play: true,
 			pause: null,
-			seekData:{
-				seekTime: videoPlayer.currentTime,
-			},
-		};
+			seekData: null,
+		}
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
 	}
@@ -133,7 +120,7 @@ videoPlayer.onseeking = function () {
 
 videoPlayer.oncanplay = function () {
 	console.log("canplay","  ",videoPlayer.readyState);
-//	if(videoControlFlag){
+	if(videoControlFlag){
 		var videoinfo = {
 			event: "canplay",
 			play: true,
@@ -142,13 +129,13 @@ videoPlayer.oncanplay = function () {
 		}
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
-//	}
+	}
 	videoPlayer.play();
 }
 
 videoPlayer.onwaiting = function () {
 	console.log("waiting","  ",videoPlayer.readyState);
-//	if(videoControlFlag){	
+	if(videoControlFlag){	
 		var videoinfo = {
 			event: "waiting",
 			play: null,
@@ -157,7 +144,7 @@ videoPlayer.onwaiting = function () {
 		}
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
-//	}
+	}
 }
 
 function sendMessage() {
