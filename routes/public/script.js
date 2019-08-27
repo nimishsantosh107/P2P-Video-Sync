@@ -74,14 +74,27 @@ function createDataPacket (msg,videoinfo) {
 }
 
 videoPlayer.onplay = function () {
-	console.log("played","  ",videoPlayer.readyState);
+	// console.log("played","  ",videoPlayer.readyState);
+	// if(videoControlFlag){
+	// 	var videoinfo = {
+	// 		event: "played",
+	// 		play: true,
+	// 		pause: null,
+	// 		seekData: null,
+	// 	}
+	// 	var jsonString = createDataPacket(null, videoinfo);
+	// 	transmitData(jsonString);
+	// }
 	if(videoControlFlag){
+		videoPlayer.play();
 		var videoinfo = {
-			event: "played",
-			play: true,
+			event: "seeked",
+			play: null,
 			pause: null,
-			seekData: null,
-		}
+			seekData:{
+				seekTime: videoPlayer.currentTime,
+			},
+		};
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
 	}
