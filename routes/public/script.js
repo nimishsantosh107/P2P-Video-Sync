@@ -60,14 +60,14 @@ function createDataPacket (msg,videoinfo) {
 	if(msg){
 		msgObject = {
 			message: msg,
-			sender: peer.id,
+			sender: socket.id,
 		};
 		data.messageData = msgObject;
 	}
 	if(videoinfo){
 		data.videoData = {
 			videoinfo: videoinfo,
-			sender: peer.id,
+			sender: socket.id,
 		}
 	}
 	return JSON.stringify(data);
