@@ -208,7 +208,7 @@ function getAudioStream () {
 	}, function (err) {console.log(`ERROR GETTING STREAM`);});
 }
 
-function getCallStream (stream) {
+function getCallStream (call, stream) {
 	console.log("RECIEVED: ",stream);
 	var audioTag = document.createElement("audio");
 	audioTag.id = call.peer;
@@ -283,7 +283,7 @@ socket.on('connect', async function () {
 			peer.on('call', function (call) {
 				//GET REMOTE STREAM
 				call.on('stream',function(stream){
-					getCallStream(stream);
+					getCallStream(call, stream);
 							
 					//PUSH TO CALL OBJ ARRAY
 					deleteCallObj(call.peer);
@@ -338,7 +338,7 @@ socket.on('connect', async function () {
 		var call = await peer.call(data.peerid, window.stream);
 		//CALL METHODS
 		call.on('stream',function(stream){
-			getCallStream(stream);
+			getCallStream(call, stream);
 
 			//PUSH TO CALL OBJ ARRAY
 			deleteCallObj(call.peer);
