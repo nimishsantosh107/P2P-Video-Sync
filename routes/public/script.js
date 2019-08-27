@@ -130,7 +130,6 @@ videoPlayer.oncanplay = function () {
 		var jsonString = createDataPacket(null, videoinfo);
 		transmitData(jsonString);
 	//}
-	videoPlayer.play();
 }
 
 videoPlayer.onwaiting = function () {
