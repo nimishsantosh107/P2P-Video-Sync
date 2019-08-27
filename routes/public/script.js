@@ -248,15 +248,7 @@ socket.on('connect', async function () {
 			}
 
 			//P2P
-			peer = new Peer({
-			    config: {
-			        'iceServers': [{
-			            url: 'stun:stun.l.google.com:19302'
-			        }]
-			    }
-			}, {
-			    debug: 2
-			});
+			peer = new Peer();
 
 			//INIT PEER ID & SIGNAL & JOIN ROOM
 			peer.on('open', function (id) {
@@ -283,7 +275,7 @@ socket.on('connect', async function () {
 			peer.on('call', function (call) {
 				//GET REMOTE STREAM
 				call.on('stream',function(stream){
-					getCallStream(call, stream);
+					//getCallStream(call, stream);
 							
 					//PUSH TO CALL OBJ ARRAY
 					deleteCallObj(call.peer);
@@ -338,7 +330,7 @@ socket.on('connect', async function () {
 		var call = await peer.call(data.peerid, window.stream);
 		//CALL METHODS
 		call.on('stream',function(stream){
-			getCallStream(call, stream);
+			//getCallStream(call, stream);
 
 			//PUSH TO CALL OBJ ARRAY
 			deleteCallObj(call.peer);
