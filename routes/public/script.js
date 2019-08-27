@@ -133,7 +133,6 @@ videoPlayer.oncanplay = function () {
 }
 
 videoPlayer.onwaiting = function () {
-	videoControlFlag = false;
 	console.log("waiting","  ",videoPlayer.readyState);
 	var videoinfo = {
 		event: "waiting",
@@ -143,7 +142,6 @@ videoPlayer.onwaiting = function () {
 	}
 	var jsonString = createDataPacket(null, videoinfo);
 	transmitData(jsonString);
-	setTimeout(function(){ videoControlFlag = true; }, 500);	
 }
 
 function sendMessage() {
