@@ -49,12 +49,74 @@ async function deleteAudioTags(peerid) {
 		audioCalls.removeChild(temp);
 }
 
+function transmitData(jsonString) {
+	connObjList.forEach(function (connObj) {
+		connObj.send(jsonString);
+	});
+}
+
+function createDataPacket (msg,videoinfo) {
+	data = {messageData: null, videoData: null};
+	if(msg){
+		msgObject = {
+			message: msg,
+			sender: peer.id,
+		};
+		data.messageData = msgObject;
+	}
+	if(videoinfo){
+		data.videoData = {
+			videoinfo: videoinfo,
+			sender: peer.id,
+		}
+	}
+	return JSON.stringify(data);
+}
+
+videoPlayer.onplay = function () {
+	if(videoControlFlag){
+		var videoinfo = {
+			play: true,
+			pause: null,
+			seekData: null,
+		}
+		var jsonString = createDataPacket(null, videoinfo);
+		transmitData(jsonString);
+	}
+}
+
+videoPlayer.onpause = function () {
+	if(videoControlFlag && (videoPlayer.readyState === 4)){	
+		var videoinfo = {
+			play: null,
+			pause: true,
+			seekData: null,
+		}
+		var jsonString = createDataPacket(null, videoinfo);
+		transmitData(jsonString);
+	}
+}
+
+videoPlayer.onseeking = function () {
+	if(videoControlFlag){
+		videoPlayer.play();
+		var videoinfo = {
+			play: null,
+			pause: null,
+			seekData:{
+				seekTime: videoPlayer.currentTime,
+			},
+		};
+		var jsonString = createDataPacket(null, videoinfo);
+		transmitData(jsonString);
+	}
+}
+
 function sendMessage() {
 	var msg = messageSendText.value;
 	updateMessageList(msg);
-	connObjList.forEach(function (connObj) {
-		connObj.send(msg);
-	});
+	var jsonString = createDataPacket(msg, null);
+	transmitData(jsonString);
 	messageSendText.value = "";
 }
 
@@ -62,6 +124,30 @@ function updateMessageList(msg) {
 	var p = document.createElement("p");
 	p.innerText = msg;
 	messages.append(p);
+}
+
+function handleOnData(jsonString) {
+	data = JSON.parse(jsonString);
+	if(data.messageData){
+		console.log(data);
+		updateMessageList("PEER: "+data.messageData.message);
+	}
+	if(data.videoData && videoControlFlag){
+		console.log(Date(),"  ",data);
+		videoControlFlag = false;
+		var videoinfo = data.videoData.videoinfo
+		if(videoinfo.play){
+			videoPlayer.play();
+		}
+		if(videoinfo.pause){
+			videoPlayer.pause();
+		}
+		if(videoinfo.seekData){
+			videoPlayer.currentTime = videoinfo.seekData.seekTime;
+			videoPlayer.play();
+		}
+		setTimeout(function(){ videoControlFlag = true; }, 500);
+	}
 }
 
 function getAudioStream () {
@@ -72,12 +158,24 @@ function getAudioStream () {
 	}, function (err) {console.log(`ERROR GETTING STREAM`);});
 }
 
+function getCallStream (stream) {
+	console.log("RECIEVED: ",stream);
+	var audioTag = document.createElement("audio");
+	audioTag.id = call.peer;
+	audioTag.controls = "true";
+	audioTag.srcObject = stream;
+	audioCalls.appendChild(audioTag);
+	audioTag.play();
+}
+
+
 //INIT
 var socket = io(window.location.origin);
 var peer = null;
 var peersList = [];
 var connObjList = [];
 var callObjList = [];
+var videoControlFlag = true;
 
 
 socket.on('connect', async function () {
@@ -115,8 +213,8 @@ socket.on('connect', async function () {
 			//RECIEVE CONNECTION - SET CONN METHODS ***********
 			peer.on('connection', function (conn) {
 				//DATA
-			  	conn.on('data', function(message) {
-			  		updateMessageList("PEER: "+message);
+			  	conn.on('data', function(jsonString) {
+			  		handleOnData(jsonString);
 			  	});
 
 				//PUSH CONN TO CONN LIST FINALLY
@@ -127,13 +225,7 @@ socket.on('connect', async function () {
 			peer.on('call', function (call) {
 				//GET REMOTE STREAM
 				call.on('stream',function(stream){
-					console.log("RECIEVED: ",stream);
-					var audioTag = document.createElement("audio");
-					audioTag.id = call.peer;
-					audioTag.controls = "true";
-					audioTag.srcObject = stream;
-					audioCalls.appendChild(audioTag);
-					audioTag.play();
+					//getCallStream(stream);
 							
 					//PUSH TO CALL OBJ ARRAY
 					deleteCallObj(call.peer);
@@ -163,8 +255,8 @@ socket.on('connect', async function () {
 		//CONN METHODS  ***********
 		conn.on('open', function () {
 			//DATA
-		  	conn.on('data', function(message){
-		  		updateMessageList("PEER: "+message);
+		  	conn.on('data', function(jsonString){
+		  		handleOnData(jsonString);
 		  	});	
 
 			//PUSH TO PEER OBJ LIST
@@ -176,13 +268,7 @@ socket.on('connect', async function () {
 		var call = await peer.call(data.peerid, window.stream);
 		//CALL METHODS
 		call.on('stream',function(stream){
-			console.log("RECIEVED: ",stream);
-			var audioTag = document.createElement("audio");
-			audioTag.id = call.peer;
-			audioTag.controls = "true";
-			audioTag.srcObject = stream;
-			audioCalls.appendChild(audioTag);
-			audioTag.play();
+			//getCallStream(stream);
 
 			//PUSH TO CALL OBJ ARRAY
 			deleteCallObj(call.peer);
