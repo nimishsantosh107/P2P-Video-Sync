@@ -74,6 +74,7 @@ function createDataPacket (msg,videoinfo) {
 }
 
 videoPlayer.onplay = function () {
+	console.log("played","  ",videoPlayer.readyState);
 	if(videoControlFlag){
 		var videoinfo = {
 			play: true,
@@ -86,6 +87,7 @@ videoPlayer.onplay = function () {
 }
 
 videoPlayer.onpause = function () {
+	console.log("paused","  ",videoPlayer.readyState);
 	if(videoControlFlag && (videoPlayer.readyState === 4)){	
 		var videoinfo = {
 			play: null,
@@ -98,6 +100,7 @@ videoPlayer.onpause = function () {
 }
 
 videoPlayer.onseeking = function () {
+	console.log("seeked","  ",videoPlayer.readyState);
 	if(videoControlFlag){
 		videoPlayer.play();
 		var videoinfo = {
