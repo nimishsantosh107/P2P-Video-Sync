@@ -104,7 +104,6 @@ videoPlayer.onpause = function () {
 videoPlayer.onseeking = function () {
 	console.log("seeked","  ",videoPlayer.readyState);
 	if(videoControlFlag){
-		videoPlayer.play();
 		var videoinfo = {
 			event: "seeked",
 			play: null,
@@ -132,6 +131,7 @@ videoPlayer.oncanplay = function () {
 	setTimeout(function(){ videoControlFlag = true; }, 500);
 }
 
+//WAIT EVEN IMMIDIATELY SENDS PAUSE AND DOES NOT SET FLAG FALSE
 videoPlayer.onwaiting = function () {
 	console.log("waiting","  ",videoPlayer.readyState);
 	var videoinfo = {
@@ -166,26 +166,37 @@ function handleOnData(jsonString) {
 	}
 	if(data.videoData && videoControlFlag){
 		var timeStamp = new Date();
-		console.log(timeStamp.getHours().toString()+":"+timeStamp.getMinutes().toString()+":"+timeStamp.getSeconds().toString(),data);
+		console.log(timeStamp.getHours().toString()+":"+
+			timeStamp.getMinutes().toString()+":"+
+			timeStamp.getSeconds().toString()+":"+
+			timeStamp.getMilliseconds().toString(), data);
 		var videoinfo = data.videoData.videoinfo
-		videoControlFlag = false;
 		if(videoinfo.play && videoinfo.event ==="played"){
+			videoControlFlag = false;
 			videoPlayer.play();
+			setTimeout(function(){ videoControlFlag = true; }, 500);
 		}
 		if(videoinfo.play && videoinfo.event === "canplay"){
+			videoControlFlag = false;
 			videoPlayer.play();
+			setTimeout(function(){ videoControlFlag = true; }, 500);
 		}
 		if(videoinfo.pause && videoinfo.event === "paused"){
+			videoControlFlag = false;
 			videoPlayer.pause();
+			setTimeout(function(){ videoControlFlag = true; }, 500);
 		}
 		if(videoinfo.pause && videoinfo.event === "waiting"){
+			videoControlFlag = false;
 			videoPlayer.pause();
+			setTimeout(function(){ videoControlFlag = true; }, 70);
 		}
 		if(videoinfo.seekData){
+			videoControlFlag = false;
 			videoPlayer.currentTime = videoinfo.seekData.seekTime;
 			videoPlayer.play();
+			setTimeout(function(){ videoControlFlag = true; }, 500);
 		}
-		setTimeout(function(){ videoControlFlag = true; }, 500);
 	}
 }
 
@@ -298,16 +309,17 @@ socket.on('connect', async function () {
 		  		handleOnData(jsonString);
 		  	});
 
-		  	//SEND CURRENT VIDEO INFO TO NEW CLIENT
-		  	var videoinfo = {
+		  	//SEND CURRENT VIDEO INFO TO NEW CLIENT & PLAY}
+		  	var videoinfoPosition = {
 				play: null,
 				pause: null,
 				seekData:{
 					seekTime: videoPlayer.currentTime+0.15,
 					},
 				};
-			var jsonString = createDataPacket(null, videoinfo);
-			conn.send(jsonString);
+			var jsonStringPosition = createDataPacket(null, videoinfoPosition);
+			conn.send(jsonStringPosition);
+
 
 			//PUSH TO PEER OBJ LIST
 			deleteConnObj(conn.peer);
